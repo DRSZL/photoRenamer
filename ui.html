@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Renamer 📸</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --surface3: #242430;
+    --border: #2a2a35;
+    --border-soft: rgba(42,42,53,0.6);
+    --green: #22c55e;
+    --green-dark: #15803d;
+    --green-glow: rgba(34,197,94,0.35);
+    --blue: #3b82f6;
+    --blue-soft: rgba(59,130,246,0.12);
+    --blue-glow: rgba(59,130,246,0.3);
+    --text: #e8e8f0;
+    --text-soft: #b0b0c0;
+    --muted: #6b6b80;
+    --accent: #a78bfa;
+    --accent-soft: rgba(167,139,250,0.12);
+    --yellow: #fbbf24;
+    --red: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 10% 0%, rgba(59,130,246,0.09) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 60% at 90% 100%, rgba(167,139,250,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(34,197,94,0.03) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ─── Titlebar ─── */
+  .titlebar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px;
+    background: rgba(22,22,26,0.95);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative; z-index: 2;
+    -webkit-app-region: drag;
+    backdrop-filter: blur(10px);
+  }
+  .traffic-lights { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .dot.red    { background: #ff5f57; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green  { background: #28ca41; }
+
+  .titlebar-brand {
+    display: flex; align-items: center; gap: 8px;
+    -webkit-app-region: no-drag;
+  }
+  .titlebar-icon {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: linear-gradient(135deg, #3b82f6 0%, #a78bfa 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+  }
+  .titlebar-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 800;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .titlebar-version {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; color: var(--muted);
+    background: var(--surface3); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .titlebar-spacer { flex: 1; }
+
+  .settings-btn {
+    background: var(--surface3); border: 1px solid var(--border);
+    color: var(--muted); width: 28px; height: 28px;
+    border-radius: 8px; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; -webkit-app-region: no-drag;
+  }
+  .settings-btn:hover { color: var(--text); border-color: var(--muted); background: var(--surface2); }
+
+  /* ─── Main area ─── */
+  .main {
+    display: flex; flex: 1; overflow: hidden;
+    position: relative; z-index: 1;
+  }
+
+  /* ─── Sidebar ─── */
+  .sidebar {
+    width: 280px; flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    background: rgba(16,16,20,0.6);
+  }
+  .sidebar-header {
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+    background: rgba(30,30,36,0.4);
+  }
+  .sidebar-title {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sidebar-title-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--blue); box-shadow: 0 0 6px var(--blue);
+  }
+  .add-btn {
+    background: linear-gradient(135deg, var(--blue) 0%, #6366f1 100%);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 800;
+    cursor: pointer; transition: all 0.2s;
+    -webkit-app-region: no-drag;
+    box-shadow: 0 2px 8px var(--blue-glow);
+    letter-spacing: 0.02em;
+  }
+  .add-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px var(--blue-glow); }
+  .add-btn:active { transform: translateY(0); }
+
+  .tree {
+    flex: 1; overflow-y: auto; padding: 8px 6px;
+  }
+  .tree::-webkit-scrollbar { width: 3px; }
+  .tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .tree-placeholder {
+    padding: 24px 16px;
+    text-align: center; line-height: 1.9;
+    color: var(--muted); font-size: 11px; opacity: 0.6;
+  }
+  .tree-placeholder-arrow {
+    font-size: 18px; margin-bottom: 6px;
+    animation: floatArrow 2s ease-in-out infinite;
+  }
+  @keyframes floatArrow {
+    0%,100% { transform: translateX(0); }
+    50%      { transform: translateX(-5px); }
+  }
+
+  /* Tree nodes */
+  .node-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 8px; border-radius: 8px; cursor: pointer;
+    transition: background 0.12s;
+  }
+  .node-row:hover { background: var(--surface2); }
+
+  .chevron {
+    width: 14px; height: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 9px;
+    transition: transform 0.2s cubic-bezier(0.16,1,0.3,1);
+    flex-shrink: 0;
+  }
+  .chevron.open { transform: rotate(90deg); }
+  .chevron.leaf { opacity: 0; pointer-events: none; }
+
+  .cb-wrap { width: 15px; height: 15px; flex-shrink: 0; }
+  .cb-wrap input[type=checkbox] {
+    appearance: none; width: 15px; height: 15px;
+    border: 1.5px solid var(--border); border-radius: 4px;
+    background: var(--bg); cursor: pointer;
+    transition: all 0.15s; position: relative; display: block;
+  }
+  .cb-wrap input[type=checkbox]:checked {
+    background: var(--blue); border-color: var(--blue);
+    box-shadow: 0 0 0 2px var(--blue-soft);
+  }
+  .cb-wrap input[type=checkbox]:checked::after {
+    content: ''; position: absolute;
+    left: 3.5px; top: 1px; width: 5px; height: 9px;
+    border: 2px solid #fff; border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+
+  .folder-icon { font-size: 13px; flex-shrink: 0; }
+  .node-name {
+    flex: 1; font-size: 12.5px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .img-badge {
+    font-family: 'Space Mono', monospace; font-size: 9.5px;
+    padding: 2px 6px; border-radius: 20px;
+    background: rgba(251,191,36,0.1); color: var(--yellow);
+    font-weight: 700; flex-shrink: 0;
+    border: 1px solid rgba(251,191,36,0.15);
+  }
+  .img-badge.none { background: rgba(107,107,128,0.08); color: var(--muted); border-color: transparent; }
+
+  .children { padding-left: 18px; display: none; }
+  .children.open { display: block; }
+
+  /* ─── Right panel ─── */
+  .panel {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 18px 20px; gap: 14px; overflow-y: auto;
+  }
+  .panel-title {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted); padding-bottom: 12px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-title::before {
+    content: ''; width: 3px; height: 12px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--blue), var(--accent));
+    flex-shrink: 0;
+  }
+
+  .summary-list { display: flex; flex-direction: column; gap: 7px; flex: 1; min-height: 0; overflow-y: auto; }
+  .summary-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+    animation: fadeSlideIn 0.25s cubic-bezier(0.16,1,0.3,1) both;
+    flex-shrink: 0;
+  }
+  .summary-item:hover { border-color: rgba(59,130,246,0.3); }
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .summary-path {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: var(--blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .summary-count { font-size: 11.5px; color: var(--muted); }
+  .summary-count span { color: var(--yellow); font-weight: 700; }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px; text-align: center;
+    border: 1.5px dashed rgba(42,42,53,0.8);
+    border-radius: 16px; margin: 4px 0;
+    padding: 40px 20px;
+    background: rgba(16,16,20,0.3);
+    transition: border-color 0.2s;
+  }
+  .empty-state-icon {
+    font-size: 36px; line-height: 1;
+    filter: drop-shadow(0 4px 12px rgba(251,191,36,0.2));
+    animation: floatIcon 3s ease-in-out infinite;
+  }
+  @keyframes floatIcon {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  .empty-state-title {
+    font-size: 14px; font-weight: 700; color: var(--text-soft);
+  }
+  .empty-state-sub {
+    font-size: 11.5px; color: var(--muted); line-height: 1.6;
+    max-width: 220px;
+  }
+
+  /* Progress card */
+  .progress-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    flex-shrink: 0;
+  }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; }
+  .progress-label { font-size: 11px; font-weight: 700; color: var(--text-soft); letter-spacing: 0.05em; }
+  .progress-pct { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--green); font-weight: 700; }
+  .progress-track {
+    width: 100%; height: 6px; background: var(--bg);
+    border-radius: 999px; overflow: hidden;
+    border: 1px solid var(--border-soft);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green) 0%, #86efac 100%);
+    border-radius: 999px; width: 0%;
+    transition: width 0.35s cubic-bezier(0.16,1,0.3,1);
+    position: relative; overflow: hidden;
+  }
+  .progress-fill.active::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { from { transform:translateX(-100%); } to { transform:translateX(200%); } }
+  .progress-detail { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+
+  /* Start button */
+  .start-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--green) 0%, #16a34a 100%);
+    color: #fff;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800;
+    letter-spacing: 0.04em; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px var(--green-glow);
+    position: relative; overflow: hidden;
+  }
+  .start-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+    opacity: 1;
+  }
+  .start-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px var(--green-glow);
+  }
+  .start-btn:active:not(:disabled) { transform: translateY(0); }
+  .start-btn:disabled {
+    background: var(--surface2);
+    color: var(--muted); cursor: not-allowed;
+    box-shadow: none;
+  }
+  .start-btn:disabled::before { opacity: 0; }
+  .start-btn.done {
+    background: linear-gradient(135deg, var(--blue) 0%, #6366f1 100%);
+    box-shadow: 0 4px 16px var(--blue-glow);
+  }
+
+  /* ─── Log section ─── */
+  .log-section {
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .log-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; background: rgba(22,22,26,0.95);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .log-header:hover { background: #22222a; }
+  .log-header-left {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
+  }
+  .log-pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .log-pulse.active {
+    background: var(--green);
+    box-shadow: 0 0 0 0 var(--green-glow);
+    animation: logPulse 1.2s infinite;
+  }
+  @keyframes logPulse {
+    0%   { box-shadow: 0 0 0 0 var(--green-glow); }
+    70%  { box-shadow: 0 0 0 5px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .log-badge-count {
+    background: var(--accent-soft); color: var(--accent);
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 2px 8px; border-radius: 20px; font-weight: 700;
+    border: 1px solid rgba(167,139,250,0.15);
+  }
+  .log-header-right { display: flex; align-items: center; gap: 10px; }
+  .log-export-btn {
+    background: var(--accent-soft); color: var(--accent);
+    border: 1px solid rgba(167,139,250,0.15);
+    border-radius: 6px; padding: 4px 10px;
+    font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.05em; transition: all 0.15s;
+  }
+  .log-export-btn:hover { background: rgba(167,139,250,0.22); }
+  .log-chevron { color: var(--muted); font-size: 10px; transition: transform 0.25s; }
+  .log-chevron.open { transform: rotate(180deg); }
+
+  .log-body { display: none; height: 200px; overflow-y: auto; background: var(--bg); }
+  .log-body.open { display: block; }
+  .log-body::-webkit-scrollbar { width: 3px; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .log-table { width: 100%; border-collapse: collapse; font-family: 'Space Mono', monospace; font-size: 10.5px; }
+  .log-table thead th {
+    position: sticky; top: 0; background: #0f0f12;
+    padding: 8px 14px; text-align: left; color: var(--muted);
+    font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border); z-index: 1;
+  }
+  .log-table tbody tr {
+    border-bottom: 1px solid rgba(42,42,53,0.5);
+    transition: background 0.1s;
+  }
+  .log-table tbody tr:hover { background: var(--surface2); }
+  .log-table td { padding: 7px 14px; vertical-align: middle; white-space: nowrap; }
+
+  .td-old { color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  .td-arrow { color: var(--border); padding: 0 2px; }
+  .td-new { color: var(--text); font-weight: 700; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  .td-new.unnamed { color: var(--red); }
+  .td-reason { color: var(--muted); font-size: 9.5px; }
+  .tag {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  }
+  .tag.exif   { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.15); }
+  .tag.noexif { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.15); }
+
+  .log-empty {
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; color: var(--muted); font-family: 'Space Mono', monospace;
+    font-size: 11px; opacity: 0.4; padding: 40px; text-align: center;
+  }
+
+  /* ─── Bottom bar ─── */
+  .bottom-bar {
+    padding: 8px 18px; border-top: 1px solid var(--border);
+    background: rgba(16,16,20,0.95);
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted);
+    flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    animation: statusPulse 2.5s infinite; flex-shrink: 0;
+  }
+  @keyframes statusPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+    50%      { box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+  }
+  .status-txt { color: var(--green); font-weight: 700; }
+  .status-sep { color: var(--border); }
+  .log-file-hint {
+    margin-left: auto; display: flex; align-items: center; gap: 5px;
+    font-size: 9.5px; opacity: 0; transition: opacity 0.5s;
+    color: var(--accent);
+  }
+  .log-file-hint.visible { opacity: 1; }
+
+  /* ─── Settings overlay ─── */
+  .settings-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .settings-overlay.open { display: flex; }
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px;
+    width: 350px;
+    display: flex; flex-direction: column; gap: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: panelIn 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes panelIn { from { opacity:0; transform:scale(0.93) translateY(10px); } to { opacity:1; transform:none; } }
+  .settings-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .settings-title {
+    font-size: 16px; font-weight: 800; letter-spacing: 0.01em;
+  }
+  .settings-close {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; padding: 6px 14px;
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .settings-close:hover { color: var(--text); border-color: var(--muted); }
+
+  .settings-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+  }
+  .lang-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  }
+  .lang-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 4px; border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2); cursor: pointer; transition: all 0.18s;
+    font-family: 'Syne', sans-serif;
+  }
+  .lang-btn:hover { border-color: var(--blue); background: var(--blue-soft); transform: translateY(-1px); }
+  .lang-btn.active { border-color: var(--blue); background: var(--blue-soft); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+  .lang-flag { font-size: 22px; line-height: 1; }
+  .lang-code { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); }
+  .lang-btn.active .lang-code { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- Titlebar -->
+<div class="titlebar">
+  <div class="traffic-lights">
+    <div class="dot red"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
+  </div>
+  <div class="titlebar-brand">
+    <div class="titlebar-icon">📸</div>
+    <span class="titlebar-name">Photo Renamer</span>
+    <span class="titlebar-version">v1.0</span>
+  </div>
+  <div class="titlebar-spacer"></div>
+  <button class="settings-btn" onclick="toggleSettings()" title="Settings">⚙</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <div class="sidebar-title-dot"></div>
+        <span data-i18n="folderHeader">Ordner</span>
+      </div>
+      <button class="add-btn" id="addBtn" data-i18n="addBtn">+ Hinzufügen</button>
+    </div>
+    <div class="tree" id="tree">
+      <div class="tree-placeholder" id="treePlaceholder">
+        <div class="tree-placeholder-arrow">←</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="panel">
+    <div class="panel-title" data-i18n="panelTitle">Ausgewählte Ordner</div>
+
+    <div class="summary-list" id="summaryList">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">📂</div>
+        <div class="empty-state-title" data-i18n="emptyStateTitle">Kein Ordner ausgewählt.</div>
+        <div class="empty-state-sub" data-i18n="emptyStateSubtitle">Wähle einen Ordner im Baum links aus.</div>
+      </div>
+    </div>
+
+    <div class="progress-card">
+      <div class="progress-header">
+        <span class="progress-label" data-i18n="progressLabel">Fortschritt</span>
+        <span class="progress-pct" id="pctLabel">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-detail" id="progressDetail"></div>
+    </div>
+
+    <button class="start-btn" id="startBtn" disabled onclick="startRename()" data-i18n="startBtn">
+      ✨ Umbenennen!
+    </button>
+  </div>
+
+</div>
+
+<!-- Log section -->
+<div class="log-section">
+  <div class="log-header" onclick="toggleLog()">
+    <div class="log-header-left">
+      <div class="log-pulse" id="logPulse"></div>
+      <span data-i18n="logHeader">📋 Umbenennnungs-Log</span>
+      <span class="log-badge-count" id="logCount"></span>
+    </div>
+    <div class="log-header-right">
+      <button class="log-export-btn" onclick="event.stopPropagation(); exportLog()" data-i18n="exportBtn">⬇ rename_log.txt</button>
+      <span class="log-chevron" id="logChevron">▼</span>
+    </div>
+  </div>
+  <div class="log-body" id="logBody">
+    <div class="log-empty" id="logEmpty" data-i18n="logEmpty"></div>
+    <table class="log-table" id="logTable" style="display:none">
+      <thead>
+        <tr>
+          <th data-i18n="colOriginal">Originalname</th>
+          <th></th>
+          <th data-i18n="colNew">Neuer Name</th>
+          <th data-i18n="colReason">Datum / Grund</th>
+          <th data-i18n="colExif">EXIF</th>
+        </tr>
+      </thead>
+      <tbody id="logTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <div class="status-dot"></div>
+  <span class="status-txt" id="statusTxt"></span>
+  <span class="status-sep">&mdash;</span>
+  <span id="statusDetail"></span>
+  <div class="log-file-hint" id="logFileHint" data-i18n="logFileHint"></div>
+</div>
+
+<!-- Settings overlay -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnBackdrop(event)">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <span class="settings-title" data-i18n="settingsTitle">Einstellungen</span>
+      <button class="settings-close" onclick="toggleSettings()" data-i18n="settingsClose">Schließen</button>
+    </div>
+    <div>
+      <div class="settings-section-label" data-i18n="languageLabel">Sprache</div>
+      <div class="lang-grid">
+        <button class="lang-btn" data-lang="de" onclick="setLanguage('de')">
+          <span class="lang-flag">🇩🇪</span>
+          <span class="lang-code">DE</span>
+        </button>
+        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">
+          <span class="lang-flag">🇬🇧</span>
+          <span class="lang-code">EN</span>
+        </button>
+        <button class="lang-btn" data-lang="fr" onclick="setLanguage('fr')">
+          <span class="lang-flag">🇫🇷</span>
+          <span class="lang-code">FR</span>
+        </button>
+        <button class="lang-btn" data-lang="es" onclick="setLanguage('es')">
+          <span class="lang-flag">🇪🇸</span>
+          <span class="lang-code">ES</span>
+        </button>
+        <button class="lang-btn" data-lang="pl" onclick="setLanguage('pl')">
+          <span class="lang-flag">🇵🇱</span>
+          <span class="lang-code">PL</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Translations ───────────────────────────────────────────────────────────────
+const STRINGS = {
+  de: {
+    folderHeader:     'Ordner',
+    addBtn:           '+ Hinzufügen',
+    treePlaceholder:  '← „+ Hinzufügen" drücken,\num einen Ordner zu laden.',
+    panelTitle:       'Ausgewählte Ordner',
+    emptyStateTitle:  'Kein Ordner ausgewählt.',
+    emptyStateSubtitle: 'Wähle einen Ordner im Baum links aus.',
+    progressLabel:    'Fortschritt',
+    startBtn:         '✨ Umbenennen!',
+    logHeader:        '📋 Umbenennnungs-Log',
+    exportBtn:        '⬇ rename_log.txt',
+    logEmpty:         'Noch kein Umbenennen gestartet.',
+    colOriginal:      'Originalname',
+    colNew:           'Neuer Name',
+    colReason:        'Datum / Grund',
+    colExif:          'EXIF',
+    statusReady:      'Bereit',
+    statusProcessing: 'Verarbeitung …',
+    statusDone:       'Fertig',
+    logFileHint:      '💾 rename_log.txt in jedem Ordner gespeichert',
+    settingsTitle:    'Einstellungen',
+    settingsClose:    'Schließen',
+    languageLabel:    'Sprache',
+    tagExif:          'EXIF ✓',
+    tagNoExif:        'kein EXIF',
+    logEntries:       n  => `${n} Einträge`,
+    progressDetail:   (d,t) => `${d} / ${t} Bilder umbenannt`,
+    imagesFound:      n  => `<span>${n}</span> Bilder gefunden`,
+    noImages:         'Keine Bilder',
+    btnProcessing:    '⏳ Verarbeitung …',
+    btnDone:          n  => `✅ Fertig! ${n} Bilder umbenannt.`,
+    statusFolders:    (f,i) => `${f} Ordner · ${i} Bilder gesamt`,
+    statusAfterDone:  (t,u) => `${t} Bilder · ${u} ohne EXIF`,
+    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    scanningFolder:   'Scanne Ordner …',
+  },
+  en: {
+    folderHeader:     'Folders',
+    addBtn:           '+ Add',
+    treePlaceholder:  '← Press „+ Add"\nto load a folder.',
+    panelTitle:       'Chosen folders',
+    emptyStateTitle:  'No folder chosen.',
+    emptyStateSubtitle: 'Choose a folder in the tree on the left.',
+    progressLabel:    'Progress',
+    startBtn:         '✨ Rename!',
+    logHeader:        '📋 Rename log',
+    exportBtn:        '⬇ rename_log.txt',
+    logEmpty:         'No renaming started.',
+    colOriginal:      'Original name',
+    colNew:           'New name',
+    colReason:        'Date / Reason',
+    colExif:          'EXIF',
+    statusReady:      'Ready',
+    statusProcessing: 'Processing …',
+    statusDone:       'Done',
+    logFileHint:      '💾 rename_log.txt saved in each folder',
+    settingsTitle:    'Settings',
+    settingsClose:    'Close',
+    languageLabel:    'Language',
+    tagExif:          'EXIF ✓',
+    tagNoExif:        'no EXIF',
+    logEntries:       n  => `${n} entries`,
+    progressDetail:   (d,t) => `${d} / ${t} images renamed`,
+    imagesFound:      n  => `<span>${n}</span> images found`,
+    noImages:         'No images',
+    btnProcessing:    '⏳ Processing …',
+    btnDone:          n  => `✅ Done! ${n} images renamed.`,
+    statusFolders:    (f,i) => `${f} folder · ${i} images total`,
+    statusAfterDone:  (t,u) => `${t} images · ${u} without EXIF`,
+    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    scanningFolder:   'Scanning folder …',
+  },
+  fr: {
+    folderHeader:     'Dossiers',
+    addBtn:           '+ Ajouter',
+    treePlaceholder:  '← Cliquer sur „+ Ajouter"\npour charger un dossier.',
+    panelTitle:       'Dossiers sélectionnés',
+    emptyStateTitle:  'Aucun dossier sélectionné.',
+    emptyStateSubtitle: 'Choisissez un dossier dans l\'arbre à gauche.',
+    progressLabel:    'Progression',
+    startBtn:         '✨ Renommer !',
+    logHeader:        '📋 Journal de renommage',
+    exportBtn:        '⬇ rename_log.txt',
+    logEmpty:         'Aucun renommage démarré.',
+    colOriginal:      'Nom original',
+    colNew:           'Nouveau nom',
+    colReason:        'Date / Raison',
+    colExif:          'EXIF',
+    statusReady:      'Prêt',
+    statusProcessing: 'Traitement …',
+    statusDone:       'Terminé',
+    logFileHint:      '💾 rename_log.txt enregistré dans chaque dossier',
+    settingsTitle:    'Paramètres',
+    settingsClose:    'Fermer',
+    languageLabel:    'Langue',
+    tagExif:          'EXIF ✓',
+    tagNoExif:        'sans EXIF',
+    logEntries:       n  => `${n} entrées`,
+    progressDetail:   (d,t) => `${d} / ${t} images renommées`,
+    imagesFound:      n  => `<span>${n}</span> images trouvées`,
+    noImages:         'Aucune image',
+    btnProcessing:    '⏳ Traitement …',
+    btnDone:          n  => `✅ Terminé ! ${n} images renommées.`,
+    statusFolders:    (f,i) => `${f} dossier · ${i} images au total`,
+    statusAfterDone:  (t,u) => `${t} images · ${u} sans EXIF`,
+    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    scanningFolder:   'Analyse du dossier …',
+  },
+  es: {
+    folderHeader:     'Carpetas',
+    addBtn:           '+ Añadir',
+    treePlaceholder:  '← Pulsar „+ Añadir"\npara cargar una carpeta.',
+    panelTitle:       'Carpetas elegidas',
+    emptyStateTitle:  'Ninguna carpeta elegida.',
+    emptyStateSubtitle: 'Elige una carpeta en el árbol de la izquierda.',
+    progressLabel:    'Progreso',
+    startBtn:         '✨ ¡Renombrar!',
+    logHeader:        '📋 Registro de renombrado',
+    exportBtn:        '⬇ rename_log.txt',
+    logEmpty:         'No se ha iniciado ningún renombrado.',
+    colOriginal:      'Nombre original',
+    colNew:           'Nuevo nombre',
+    colReason:        'Fecha / Motivo',
+    colExif:          'EXIF',
+    statusReady:      'Listo',
+    statusProcessing: 'Procesando …',
+    statusDone:       'Hecho',
+    logFileHint:      '💾 rename_log.txt guardado en cada carpeta',
+    settingsTitle:    'Ajustes',
+    settingsClose:    'Cerrar',
+    languageLabel:    'Idioma',
+    tagExif:          'EXIF ✓',
+    tagNoExif:        'sin EXIF',
+    logEntries:       n  => `${n} entradas`,
+    progressDetail:   (d,t) => `${d} / ${t} imágenes renombradas`,
+    imagesFound:      n  => `<span>${n}</span> imágenes encontradas`,
+    noImages:         'Sin imágenes',
+    btnProcessing:    '⏳ Procesando …',
+    btnDone:          n  => `✅ ¡Hecho! ${n} imágenes renombradas.`,
+    statusFolders:    (f,i) => `${f} carpeta · ${i} imágenes en total`,
+    statusAfterDone:  (t,u) => `${t} imágenes · ${u} sin EXIF`,
+    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    scanningFolder:   'Escaneando carpeta …',
+  },
+  pl: {
+    folderHeader:     'Foldery',
+    addBtn:           '+ Dodaj',
+    treePlaceholder:  '← Naciśnij „+ Dodaj",\naby załadować folder.',
+    panelTitle:       'Wybrane foldery',
+    emptyStateTitle:  'Nie wybrano folderu.',
+    emptyStateSubtitle: 'Wybierz folder z drzewa po lewej stronie.',
+    progressLabel:    'Postęp',
+    startBtn:         '✨ Przemianuj!',
+    logHeader:        '📋 Dziennik przemianowań',
+    exportBtn:        '⬇ rename_log.txt',
+    logEmpty:         'Nie rozpoczęto przemianowywania.',
+    colOriginal:      'Oryginalna nazwa',
+    colNew:           'Nowa nazwa',
+    colReason:        'Data / Powód',
+    colExif:          'EXIF',
+    statusReady:      'Gotowy',
+    statusProcessing: 'Przetwarzanie …',
+    statusDone:       'Gotowe',
+    logFileHint:      '💾 rename_log.txt zapisany w każdym folderze',
+    settingsTitle:    'Ustawienia',
+    settingsClose:    'Zamknij',
+    languageLabel:    'Język',
+    tagExif:          'EXIF ✓',
+    tagNoExif:        'brak EXIF',
+    logEntries:       n  => `${n} wpisów`,
+    progressDetail:   (d,t) => `${d} / ${t} zdjęć przemianowanych`,
+    imagesFound:      n  => `<span>${n}</span> zdjęć znalezionych`,
+    noImages:         'Brak zdjęć',
+    btnProcessing:    '⏳ Przetwarzanie …',
+    btnDone:          n  => `✅ Gotowe! ${n} zdjęć przemianowanych.`,
+    statusFolders:    (f,i) => `${f} folder · ${i} zdjęć łącznie`,
+    statusAfterDone:  (t,u) => `${t} zdjęć · ${u} bez EXIF`,
+    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    scanningFolder:   'Skanowanie folderu …',
+  },
+};
+
+// ── Language ───────────────────────────────────────────────────────────────────
+let currentLang = localStorage.getItem('lang') || 'de';
+
+function t(key, ...args) {
+  const val = STRINGS[currentLang][key];
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = STRINGS[lang][key];
+    if (val !== undefined && typeof val === 'string') el.textContent = val;
+  });
+
+  document.getElementById('treePlaceholder').innerHTML =
+    '<div class="tree-placeholder-arrow">←</div>' +
+    t('treePlaceholder').replace('\n', '<br>').replace('← ', '');
+
+  document.getElementById('logCount').textContent = t('logEntries', logEntries.length);
+  document.getElementById('progressDetail').textContent = t('progressDetail', 0, 0);
+  document.getElementById('statusTxt').textContent = t('statusReady');
+  document.getElementById('statusDetail').textContent = t('statusFormats');
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function toggleSettings() {
+  document.getElementById('settingsOverlay').classList.toggle('open');
+}
+function closeSettingsOnBackdrop(e) {
+  if (e.target === document.getElementById('settingsOverlay')) toggleSettings();
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let rootNodes    = [];
+let checkedPaths = new Set();
+let logEntries   = [];
+let isRunning    = false;
+
+// ── Wait for pywebview API ────────────────────────────────────────────────────
+function waitForApi(cb) {
+  if (window.pywebview && window.pywebview.api) { cb(); return; }
+  setTimeout(() => waitForApi(cb), 50);
+}
+
+// ── Add folder ────────────────────────────────────────────────────────────────
+document.getElementById('addBtn').addEventListener('click', async () => {
+  const path = await window.pywebview.api.select_folder();
+  if (!path) return;
+
+  document.getElementById('tree').innerHTML =
+    `<div style="padding:16px 12px;color:var(--muted);font-size:11px;opacity:0.5;text-align:center;">${t('scanningFolder')}</div>`;
+
+  const node = await window.pywebview.api.scan_folder(path);
+  if (!node) return;
+
+  rootNodes.push(node);
+  rebuildTree();
+});
+
+// ── Tree ──────────────────────────────────────────────────────────────────────
+function rebuildTree() {
+  const container = document.getElementById('tree');
+  container.innerHTML = '';
+  rootNodes.forEach(n => renderNode(n, container));
+}
+
+function renderNode(node, container) {
+  const hasChildren = node.children && node.children.length > 0;
+  const nodeEl = document.createElement('div');
+  nodeEl.className = 'node';
+
+  const row = document.createElement('div');
+  row.className = 'node-row';
+
+  const chevron = document.createElement('div');
+  chevron.className = 'chevron' + (hasChildren ? '' : ' leaf');
+  chevron.textContent = '▶';
+
+  const cbWrap = document.createElement('label');
+  cbWrap.className = 'cb-wrap';
+  cbWrap.onclick = e => e.stopPropagation();
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = checkedPaths.has(node.path);
+  cb.addEventListener('change', () => {
+    toggleCheckRecursive(node, cb.checked);
+    updatePanel();
+  });
+  cbWrap.appendChild(cb);
+
+  const icon = document.createElement('span');
+  icon.className = 'folder-icon';
+  icon.textContent = hasChildren ? '📁' : '🗂';
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'node-name';
+  nameEl.textContent = node.name;
+
+  const badge = document.createElement('span');
+  badge.className = 'img-badge' + (node.images === 0 ? ' none' : '');
+  badge.textContent = node.images > 0 ? node.images + ' 🖼' : '—';
+
+  row.appendChild(chevron);
+  row.appendChild(cbWrap);
+  row.appendChild(icon);
+  row.appendChild(nameEl);
+  row.appendChild(badge);
+
+  row.addEventListener('click', () => {
+    if (!hasChildren) return;
+    const childrenEl = nodeEl.querySelector(':scope > .children');
+    const isOpen = childrenEl.classList.toggle('open');
+    chevron.classList.toggle('open', isOpen);
+    icon.textContent = isOpen ? '📂' : '📁';
+  });
+
+  nodeEl.appendChild(row);
+
+  if (hasChildren) {
+    const childrenDiv = document.createElement('div');
+    childrenDiv.className = 'children';
+    node.children.forEach(child => renderNode(child, childrenDiv));
+    nodeEl.appendChild(childrenDiv);
+  }
+
+  container.appendChild(nodeEl);
+}
+
+function toggleCheckRecursive(node, checked) {
+  if (checked) checkedPaths.add(node.path);
+  else         checkedPaths.delete(node.path);
+  if (node.children) node.children.forEach(c => toggleCheckRecursive(c, checked));
+  const cb = document.querySelector(`input[type=checkbox][data-path="${node.path}"]`);
+  if (cb) cb.checked = checked;
+}
+
+function getCheckedNodes() {
+  const result = [];
+  function walk(nodes) {
+    nodes.forEach(n => {
+      if (checkedPaths.has(n.path)) result.push(n);
+      if (n.children) walk(n.children);
+    });
+  }
+  walk(rootNodes);
+  return result;
+}
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
+function updatePanel() {
+  const nodes = getCheckedNodes();
+  const list  = document.getElementById('summaryList');
+  const empty = document.getElementById('emptyState');
+  const btn   = document.getElementById('startBtn');
+
+  Array.from(list.querySelectorAll('.summary-item')).forEach(e => e.remove());
+
+  if (nodes.length === 0) {
+    empty.style.display = '';
+    btn.disabled = true;
+    document.getElementById('statusDetail').textContent = t('statusFormats');
+    resetProgress();
+    return;
+  }
+
+  empty.style.display = 'none';
+  btn.disabled = false;
+
+  let total = 0;
+  nodes.forEach((n, i) => {
+    const item = document.createElement('div');
+    item.className = 'summary-item';
+    item.style.animationDelay = (i * 0.04) + 's';
+    item.innerHTML = `
+      <div class="summary-path">${n.path}</div>
+      <div class="summary-count">${n.images > 0 ? t('imagesFound', n.images) : t('noImages')}</div>
+    `;
+    list.appendChild(item);
+    total += n.images;
+  });
+
+  document.getElementById('statusDetail').textContent = t('statusFolders', nodes.length, total);
+  document.getElementById('progressDetail').textContent = t('progressDetail', 0, total);
+}
+
+function resetProgress() {
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('pctLabel').textContent = '0%';
+  document.getElementById('progressDetail').textContent = t('progressDetail', 0, 0);
+}
+
+// ── Progress callback ─────────────────────────────────────────────────────────
+window._onProgress = function(progress) {
+  const pct = Math.round((progress.done / progress.total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('progressDetail').textContent =
+    t('progressDetail', progress.done, progress.total);
+  addLogRow(progress.entry.oldName, progress.entry.newName, progress.entry.reason, progress.entry.hasExif);
+};
+
+// ── Start rename ──────────────────────────────────────────────────────────────
+async function startRename() {
+  if (isRunning) return;
+  const nodes = getCheckedNodes();
+  if (nodes.length === 0) return;
+
+  isRunning = true;
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.textContent = t('btnProcessing');
+  btn.classList.remove('done');
+  document.getElementById('statusTxt').textContent = t('statusProcessing');
+  document.getElementById('progressFill').classList.add('active');
+  document.getElementById('logPulse').classList.add('active');
+
+  logEntries = [];
+  document.getElementById('logTableBody').innerHTML = '';
+  document.getElementById('logCount').textContent = t('logEntries', 0);
+  document.getElementById('logTable').style.display = 'none';
+  document.getElementById('logEmpty').style.display = '';
+  document.getElementById('logFileHint').classList.remove('visible');
+  document.getElementById('logBody').classList.add('open');
+  document.getElementById('logChevron').classList.add('open');
+
+  const result = await window.pywebview.api.start_renaming(nodes.map(n => n.path));
+
+  isRunning = false;
+  document.getElementById('progressFill').classList.remove('active');
+  document.getElementById('logPulse').classList.remove('active');
+  btn.disabled = false;
+  btn.textContent = t('btnDone', result.renamed);
+  btn.classList.add('done');
+  document.getElementById('statusTxt').textContent = t('statusDone');
+  document.getElementById('statusDetail').textContent =
+    t('statusAfterDone', result.total, result.unnamedCount);
+  document.getElementById('logFileHint').classList.add('visible');
+}
+
+// ── Log helpers ───────────────────────────────────────────────────────────────
+function addLogRow(oldName, newName, reason, hasExif) {
+  logEntries.push({ oldName, newName, reason, hasExif });
+  document.getElementById('logTable').style.display = '';
+  document.getElementById('logEmpty').style.display = 'none';
+
+  const tr = document.createElement('tr');
+  const isUnnamed = newName.startsWith('unnamed_');
+  tr.innerHTML = `
+    <td class="td-old">${oldName}</td>
+    <td class="td-arrow">→</td>
+    <td class="td-new ${isUnnamed ? 'unnamed' : ''}">${newName}</td>
+    <td class="td-reason">${reason}</td>
+    <td><span class="tag ${hasExif ? 'exif' : 'noexif'}">${hasExif ? t('tagExif') : t('tagNoExif')}</span></td>
+  `;
+  document.getElementById('logTableBody').appendChild(tr);
+  document.getElementById('logCount').textContent = t('logEntries', logEntries.length);
+
+  const body = document.getElementById('logBody');
+  body.scrollTop = body.scrollHeight;
+}
+
+function toggleLog() {
+  document.getElementById('logBody').classList.toggle('open');
+  document.getElementById('logChevron').classList.toggle('open');
+}
+
+function exportLog() {
+  if (logEntries.length === 0) return;
+  const lines = [
+    '='.repeat(70),
+    '  Photo Renamer – Rename log',
+    `  ${new Date().toLocaleString()}`,
+    '='.repeat(70), '',
+    `${'Original'.padEnd(30)} ${'New name'.padEnd(30)} ${'Date / Reason'.padEnd(25)} EXIF`,
+    '-'.repeat(100),
+    ...logEntries.map(e =>
+      `${e.oldName.padEnd(30)} ${e.newName.padEnd(30)} ${e.reason.padEnd(25)} ${e.hasExif ? 'Yes' : 'No'}`
+    ),
+    '', '-'.repeat(100),
+    `Total: ${logEntries.length} · ${logEntries.filter(e => !e.hasExif).length} without EXIF`,
+    '='.repeat(70),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rename_log.txt';
+  a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+waitForApi(() => { document.getElementById('addBtn').disabled = false; });
+setLanguage(currentLang);
+</script>
+</body>
+</html>
