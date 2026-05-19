@@ -216,6 +216,17 @@
   }
   .img-badge.none { background: rgba(107,107,128,0.08); color: var(--muted); border-color: transparent; }
 
+  .node-remove {
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 11px;
+    cursor: pointer; flex-shrink: 0;
+    border-radius: 4px; transition: all 0.15s;
+    opacity: 0;
+  }
+  .node-row:hover .node-remove { opacity: 1; }
+  .node-remove:hover { color: var(--red); background: rgba(248,113,113,0.1); }
+
   .children { padding-left: 18px; display: none; }
   .children.open { display: block; }
 
@@ -422,6 +433,7 @@
   .td-arrow { color: var(--border); padding: 0 2px; }
   .td-new { color: var(--text); font-weight: 700; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .td-new.unnamed { color: var(--red); }
+  .td-new.mtime { color: var(--yellow); }
   .td-reason { color: var(--muted); font-size: 9.5px; }
   .tag {
     display: inline-block; padding: 2px 7px; border-radius: 4px;
@@ -513,6 +525,113 @@
   .lang-flag { font-size: 22px; line-height: 1; }
   .lang-code { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); }
   .lang-btn.active .lang-code { color: var(--blue); }
+
+  /* ─── Preview dialog ─── */
+  .preview-panel {
+    width: 640px; max-width: 92vw;
+    max-height: 82vh;
+    display: flex; flex-direction: column; gap: 0;
+    padding: 0; overflow: hidden;
+  }
+  .preview-head {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .preview-head .settings-title { font-size: 16px; font-weight: 800; }
+  .preview-sub {
+    font-size: 11.5px; color: var(--muted); margin-top: 5px;
+  }
+  .preview-scroll {
+    flex: 1; overflow-y: auto; min-height: 80px;
+  }
+  .preview-scroll::-webkit-scrollbar { width: 4px; }
+  .preview-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .preview-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'Space Mono', monospace; font-size: 10.5px;
+  }
+  .preview-table thead th {
+    position: sticky; top: 0; background: #0f0f12;
+    padding: 9px 16px; text-align: left; color: var(--muted);
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border); z-index: 1;
+  }
+  .preview-table td {
+    padding: 7px 16px; vertical-align: middle; white-space: nowrap;
+    border-bottom: 1px solid rgba(42,42,53,0.45);
+  }
+  .preview-table tbody tr:hover { background: var(--surface2); }
+  .pv-old { color: var(--muted); max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+  .pv-arrow { color: var(--border); padding: 0 2px; }
+  .pv-new { color: var(--text); font-weight: 700; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+  .pv-new.warn { color: var(--yellow); }
+  .pv-reason { color: var(--muted); font-size: 9.5px; }
+  .preview-more {
+    text-align: center; padding: 10px; color: var(--muted);
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    border-bottom: 1px solid rgba(42,42,53,0.45);
+  }
+  .preview-empty {
+    padding: 40px 20px; text-align: center;
+    color: var(--muted); font-size: 12px;
+  }
+  .preview-foot {
+    display: flex; gap: 10px; padding: 16px 24px;
+    border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  .preview-foot button { flex: 1; }
+  .btn-confirm {
+    background: linear-gradient(135deg, var(--green) 0%, #16a34a 100%);
+    color: #fff; border: none; border-radius: 8px; padding: 11px;
+    font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 800;
+    cursor: pointer; transition: all 0.18s;
+    box-shadow: 0 2px 10px var(--green-glow);
+  }
+  .btn-confirm:hover { transform: translateY(-1px); }
+
+  /* ─── Undo button ─── */
+  .undo-btn {
+    width: 100%; padding: 10px; margin-top: -6px;
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 10px; background: rgba(248,113,113,0.08);
+    color: var(--red);
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.18s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .undo-btn:hover { background: rgba(248,113,113,0.16); transform: translateY(-1px); }
+  .undo-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ─── Settings toggle ─── */
+  .toggle-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--surface2);
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .toggle-row:hover { border-color: var(--muted); }
+  .toggle-text { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .toggle-title { font-size: 12px; font-weight: 700; color: var(--text); }
+  .toggle-hint { font-size: 10px; color: var(--muted); line-height: 1.4; }
+  .toggle-row input[type=checkbox] { display: none; }
+  .toggle-switch {
+    width: 38px; height: 22px; border-radius: 999px;
+    background: var(--surface3); border: 1px solid var(--border);
+    position: relative; flex-shrink: 0; transition: all 0.18s;
+  }
+  .toggle-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--muted); transition: all 0.18s;
+  }
+  .toggle-row input:checked ~ .toggle-switch {
+    background: var(--blue-soft); border-color: var(--blue);
+  }
+  .toggle-row input:checked ~ .toggle-switch::after {
+    transform: translateX(16px); background: var(--blue);
+  }
 </style>
 </head>
 <body>
@@ -575,9 +694,11 @@
       <div class="progress-detail" id="progressDetail"></div>
     </div>
 
-    <button class="start-btn" id="startBtn" disabled onclick="startRename()" data-i18n="startBtn">
+    <button class="start-btn" id="startBtn" disabled onclick="handleStartBtn()" data-i18n="startBtn">
       ✨ Umbenennen!
     </button>
+
+    <button class="undo-btn" id="undoBtn" style="display:none" onclick="doUndo()" data-i18n="undoBtn"></button>
   </div>
 
 </div>
@@ -609,6 +730,7 @@
       </thead>
       <tbody id="logTableBody"></tbody>
     </table>
+    <div class="preview-more" id="logMore" style="display:none"></div>
   </div>
 </div>
 
@@ -619,6 +741,34 @@
   <span class="status-sep">&mdash;</span>
   <span id="statusDetail"></span>
   <div class="log-file-hint" id="logFileHint" data-i18n="logFileHint"></div>
+</div>
+
+<!-- Preview / confirmation dialog -->
+<div class="settings-overlay" id="confirmOverlay" onclick="closeConfirmOnBackdrop(event)">
+  <div class="settings-panel preview-panel">
+    <div class="preview-head">
+      <span class="settings-title" id="previewTitle"></span>
+      <div class="preview-sub" id="previewSub"></div>
+    </div>
+    <div class="preview-scroll">
+      <table class="preview-table" id="previewTable">
+        <thead>
+          <tr>
+            <th id="pvColOld"></th>
+            <th></th>
+            <th id="pvColNew"></th>
+            <th id="pvColReason"></th>
+          </tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+      <div class="preview-empty" id="previewEmpty" style="display:none"></div>
+    </div>
+    <div class="preview-foot">
+      <button class="settings-close" onclick="closeConfirm()" data-i18n="confirmCancel"></button>
+      <button class="btn-confirm" id="previewConfirmBtn" onclick="proceedRename()" data-i18n="confirmBtn"></button>
+    </div>
+  </div>
 </div>
 
 <!-- Settings overlay -->
@@ -652,6 +802,17 @@
           <span class="lang-code">PL</span>
         </button>
       </div>
+    </div>
+    <div>
+      <div class="settings-section-label" data-i18n="renameLabel">Umbenennung</div>
+      <label class="toggle-row" onclick="event.stopPropagation()">
+        <span class="toggle-text">
+          <span class="toggle-title" data-i18n="mtimeToggle">Datei-Datum als Fallback</span>
+          <span class="toggle-hint" data-i18n="mtimeHint">Wenn kein EXIF: Datei-Änderungsdatum statt unnamed_</span>
+        </span>
+        <input type="checkbox" id="mtimeToggle" onchange="setMtimeFallback(this.checked)">
+        <span class="toggle-switch"></span>
+      </label>
     </div>
   </div>
 </div>
@@ -690,10 +851,36 @@ const STRINGS = {
     noImages:         'Keine Bilder',
     btnProcessing:    '⏳ Verarbeitung …',
     btnDone:          n  => `✅ Fertig! ${n} Bilder umbenannt.`,
+    btnReset:         '🔄 Neu starten',
     statusFolders:    (f,i) => `${f} Ordner · ${i} Bilder gesamt`,
     statusAfterDone:  (t,u) => `${t} Bilder · ${u} ohne EXIF`,
-    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    statusFormats:    '.jpg .jpeg .png .tiff .webp',
+    statusHeicNote:   ' + .heic (aktiviert)',
+    statusHeicNote2:  ' + .heic (nicht unterstützt)',
     scanningFolder:   'Scanne Ordner …',
+    confirmBtn:       'Ja, umbenennen!',
+    confirmCancel:    'Abbrechen',
+    reasonNoExif:     'Kein EXIF/Datum',
+    reasonError:      'Fehler',
+    srcOriginal:      'EXIF Aufnahme',
+    srcDigitized:     'EXIF Digitalisiert',
+    srcDatetime:      'EXIF Datum',
+    srcMtime:         'Datei-Datum',
+    scanningPreview:  '🔍 Analysiere Bilder …',
+    previewTitle:     'Vorschau – Umbenennen',
+    previewSubtitle:  (n,f) => `${n} Bilder in ${f} Ordner(n) · prüfen und bestätigen`,
+    previewEmpty:     'Keine Bilder zum Umbenennen gefunden.',
+    previewColOld:    'Original',
+    previewColNew:    'Neuer Name',
+    previewColReason: 'Grund',
+    previewMore:      n => `… und ${n} weitere`,
+    undoBtn:          '↩ Rückgängig machen',
+    undoDoneMsg:      n => `↩ ${n} Datei(en) wiederhergestellt`,
+    undoNothing:      'Nichts rückgängig zu machen',
+    logCapNote:       (s,t2) => `Anzeige auf ${s} von ${t2} Zeilen begrenzt – vollständig im Export / rename_log.txt`,
+    renameLabel:      'Umbenennung',
+    mtimeToggle:      'Datei-Datum als Fallback',
+    mtimeHint:        'Ohne EXIF: Datei-Änderungsdatum verwenden statt unnamed_ (kann ungenau sein)',
   },
   en: {
     folderHeader:     'Folders',
@@ -726,10 +913,36 @@ const STRINGS = {
     noImages:         'No images',
     btnProcessing:    '⏳ Processing …',
     btnDone:          n  => `✅ Done! ${n} images renamed.`,
+    btnReset:         '🔄 Start over',
     statusFolders:    (f,i) => `${f} folder · ${i} images total`,
     statusAfterDone:  (t,u) => `${t} images · ${u} without EXIF`,
-    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    statusFormats:    '.jpg .jpeg .png .tiff .webp',
+    statusHeicNote:   ' + .heic (enabled)',
+    statusHeicNote2:  ' + .heic (not supported)',
     scanningFolder:   'Scanning folder …',
+    confirmBtn:       'Yes, rename!',
+    confirmCancel:    'Cancel',
+    reasonNoExif:     'No EXIF/date',
+    reasonError:      'Error',
+    srcOriginal:      'EXIF taken',
+    srcDigitized:     'EXIF digitized',
+    srcDatetime:      'EXIF date',
+    srcMtime:         'File date',
+    scanningPreview:  '🔍 Analyzing images …',
+    previewTitle:     'Preview – Rename',
+    previewSubtitle:  (n,f) => `${n} images in ${f} folder(s) · review and confirm`,
+    previewEmpty:     'No images found to rename.',
+    previewColOld:    'Original',
+    previewColNew:    'New name',
+    previewColReason: 'Reason',
+    previewMore:      n => `… and ${n} more`,
+    undoBtn:          '↩ Undo',
+    undoDoneMsg:      n => `↩ ${n} file(s) restored`,
+    undoNothing:      'Nothing to undo',
+    logCapNote:       (s,t2) => `Showing ${s} of ${t2} rows – full list in export / rename_log.txt`,
+    renameLabel:      'Renaming',
+    mtimeToggle:      'File date as fallback',
+    mtimeHint:        'No EXIF: use file modified date instead of unnamed_ (may be inaccurate)',
   },
   fr: {
     folderHeader:     'Dossiers',
@@ -762,10 +975,36 @@ const STRINGS = {
     noImages:         'Aucune image',
     btnProcessing:    '⏳ Traitement …',
     btnDone:          n  => `✅ Terminé ! ${n} images renommées.`,
+    btnReset:         '🔄 Recommencer',
     statusFolders:    (f,i) => `${f} dossier · ${i} images au total`,
     statusAfterDone:  (t,u) => `${t} images · ${u} sans EXIF`,
-    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    statusFormats:    '.jpg .jpeg .png .tiff .webp',
+    statusHeicNote:   ' + .heic (activé)',
+    statusHeicNote2:  ' + .heic (non supporté)',
     scanningFolder:   'Analyse du dossier …',
+    confirmBtn:       'Oui, renommer !',
+    confirmCancel:    'Annuler',
+    reasonNoExif:     'Sans EXIF/date',
+    reasonError:      'Erreur',
+    srcOriginal:      'EXIF prise',
+    srcDigitized:     'EXIF numérisé',
+    srcDatetime:      'EXIF date',
+    srcMtime:         'Date fichier',
+    scanningPreview:  '🔍 Analyse des images …',
+    previewTitle:     'Aperçu – Renommer',
+    previewSubtitle:  (n,f) => `${n} images dans ${f} dossier(s) · vérifier et confirmer`,
+    previewEmpty:     'Aucune image à renommer trouvée.',
+    previewColOld:    'Original',
+    previewColNew:    'Nouveau nom',
+    previewColReason: 'Raison',
+    previewMore:      n => `… et ${n} de plus`,
+    undoBtn:          '↩ Annuler',
+    undoDoneMsg:      n => `↩ ${n} fichier(s) restauré(s)`,
+    undoNothing:      'Rien à annuler',
+    logCapNote:       (s,t2) => `Affichage de ${s} sur ${t2} lignes – liste complète dans l'export / rename_log.txt`,
+    renameLabel:      'Renommage',
+    mtimeToggle:      'Date du fichier en repli',
+    mtimeHint:        'Sans EXIF : utiliser la date de modification au lieu de unnamed_ (peut être imprécis)',
   },
   es: {
     folderHeader:     'Carpetas',
@@ -798,10 +1037,36 @@ const STRINGS = {
     noImages:         'Sin imágenes',
     btnProcessing:    '⏳ Procesando …',
     btnDone:          n  => `✅ ¡Hecho! ${n} imágenes renombradas.`,
+    btnReset:         '🔄 Empezar de nuevo',
     statusFolders:    (f,i) => `${f} carpeta · ${i} imágenes en total`,
     statusAfterDone:  (t,u) => `${t} imágenes · ${u} sin EXIF`,
-    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    statusFormats:    '.jpg .jpeg .png .tiff .webp',
+    statusHeicNote:   ' + .heic (habilitado)',
+    statusHeicNote2:  ' + .heic (no compatible)',
     scanningFolder:   'Escaneando carpeta …',
+    confirmBtn:       '¡Sí, renombrar!',
+    confirmCancel:    'Cancelar',
+    reasonNoExif:     'Sin EXIF/fecha',
+    reasonError:      'Error',
+    srcOriginal:      'EXIF captura',
+    srcDigitized:     'EXIF digitalizado',
+    srcDatetime:      'EXIF fecha',
+    srcMtime:         'Fecha archivo',
+    scanningPreview:  '🔍 Analizando imágenes …',
+    previewTitle:     'Vista previa – Renombrar',
+    previewSubtitle:  (n,f) => `${n} imágenes en ${f} carpeta(s) · revisar y confirmar`,
+    previewEmpty:     'No se encontraron imágenes para renombrar.',
+    previewColOld:    'Original',
+    previewColNew:    'Nombre nuevo',
+    previewColReason: 'Motivo',
+    previewMore:      n => `… y ${n} más`,
+    undoBtn:          '↩ Deshacer',
+    undoDoneMsg:      n => `↩ ${n} archivo(s) restaurado(s)`,
+    undoNothing:      'Nada que deshacer',
+    logCapNote:       (s,t2) => `Mostrando ${s} de ${t2} filas – lista completa en exportación / rename_log.txt`,
+    renameLabel:      'Renombrado',
+    mtimeToggle:      'Fecha de archivo como respaldo',
+    mtimeHint:        'Sin EXIF: usar fecha de modificación en vez de unnamed_ (puede ser impreciso)',
   },
   pl: {
     folderHeader:     'Foldery',
@@ -834,10 +1099,36 @@ const STRINGS = {
     noImages:         'Brak zdjęć',
     btnProcessing:    '⏳ Przetwarzanie …',
     btnDone:          n  => `✅ Gotowe! ${n} zdjęć przemianowanych.`,
+    btnReset:         '🔄 Zacznij od nowa',
     statusFolders:    (f,i) => `${f} folder · ${i} zdjęć łącznie`,
     statusAfterDone:  (t,u) => `${t} zdjęć · ${u} bez EXIF`,
-    statusFormats:    '.jpg .jpeg .png .tiff .webp .heic',
+    statusFormats:    '.jpg .jpeg .png .tiff .webp',
+    statusHeicNote:   ' + .heic (włączone)',
+    statusHeicNote2:  ' + .heic (nie obsługiwane)',
     scanningFolder:   'Skanowanie folderu …',
+    confirmBtn:       'Tak, zmień nazwy!',
+    confirmCancel:    'Anuluj',
+    reasonNoExif:     'Brak EXIF/daty',
+    reasonError:      'Błąd',
+    srcOriginal:      'EXIF zdjęcie',
+    srcDigitized:     'EXIF cyfrowe',
+    srcDatetime:      'EXIF data',
+    srcMtime:         'Data pliku',
+    scanningPreview:  '🔍 Analizowanie zdjęć …',
+    previewTitle:     'Podgląd – Zmiana nazw',
+    previewSubtitle:  (n,f) => `${n} zdjęć w ${f} folder(ach) · sprawdź i potwierdź`,
+    previewEmpty:     'Nie znaleziono zdjęć do zmiany nazwy.',
+    previewColOld:    'Oryginał',
+    previewColNew:    'Nowa nazwa',
+    previewColReason: 'Powód',
+    previewMore:      n => `… i ${n} więcej`,
+    undoBtn:          '↩ Cofnij',
+    undoDoneMsg:      n => `↩ Przywrócono ${n} plik(ów)`,
+    undoNothing:      'Nie ma czego cofnąć',
+    logCapNote:       (s,t2) => `Pokazano ${s} z ${t2} wierszy – pełna lista w eksporcie / rename_log.txt`,
+    renameLabel:      'Zmiana nazw',
+    mtimeToggle:      'Data pliku jako rezerwa',
+    mtimeHint:        'Bez EXIF: użyj daty modyfikacji zamiast unnamed_ (może być niedokładne)',
   },
 };
 
@@ -866,7 +1157,12 @@ function setLanguage(lang) {
   document.getElementById('logCount').textContent = t('logEntries', logEntries.length);
   document.getElementById('progressDetail').textContent = t('progressDetail', 0, 0);
   document.getElementById('statusTxt').textContent = t('statusReady');
-  document.getElementById('statusDetail').textContent = t('statusFormats');
+
+  let formats = t('statusFormats');
+  if (typeof window._heicSupported !== 'undefined') {
+    formats += window._heicSupported ? t('statusHeicNote') : t('statusHeicNote2');
+  }
+  document.getElementById('statusDetail').textContent = formats;
 
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -886,6 +1182,12 @@ let rootNodes    = [];
 let checkedPaths = new Set();
 let logEntries   = [];
 let isRunning    = false;
+let mtimeFallback = localStorage.getItem('mtimeFallback') !== 'false';  // default on
+
+function setMtimeFallback(enabled) {
+  mtimeFallback = enabled;
+  localStorage.setItem('mtimeFallback', enabled ? 'true' : 'false');
+}
 
 // ── Wait for pywebview API ────────────────────────────────────────────────────
 function waitForApi(cb) {
@@ -906,16 +1208,26 @@ document.getElementById('addBtn').addEventListener('click', async () => {
 
   rootNodes.push(node);
   rebuildTree();
+
+  // A leftover undo sidecar means a previous run can still be reverted,
+  // even across an app restart — surface the Undo button if so.
+  const undoInfo = await window.pywebview.api.check_undo(rootNodes.map(n => n.path));
+  const undoBtn = document.getElementById('undoBtn');
+  if (undoInfo.available && !document.getElementById('startBtn').classList.contains('done')) {
+    undoBtn.style.display = '';
+    undoBtn.disabled = false;
+    undoBtn.textContent = t('undoBtn');
+  }
 });
 
 // ── Tree ──────────────────────────────────────────────────────────────────────
 function rebuildTree() {
   const container = document.getElementById('tree');
   container.innerHTML = '';
-  rootNodes.forEach(n => renderNode(n, container));
+  rootNodes.forEach(n => renderNode(n, container, true));
 }
 
-function renderNode(node, container) {
+function renderNode(node, container, isRoot = false) {
   const hasChildren = node.children && node.children.length > 0;
   const nodeEl = document.createElement('div');
   nodeEl.className = 'node';
@@ -958,6 +1270,15 @@ function renderNode(node, container) {
   row.appendChild(nameEl);
   row.appendChild(badge);
 
+  if (isRoot) {
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'node-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.title = 'Remove folder';
+    removeBtn.onclick = e => { e.stopPropagation(); removeRootNode(node); };
+    row.appendChild(removeBtn);
+  }
+
   row.addEventListener('click', () => {
     if (!hasChildren) return;
     const childrenEl = nodeEl.querySelector(':scope > .children');
@@ -971,7 +1292,7 @@ function renderNode(node, container) {
   if (hasChildren) {
     const childrenDiv = document.createElement('div');
     childrenDiv.className = 'children';
-    node.children.forEach(child => renderNode(child, childrenDiv));
+    node.children.forEach(child => renderNode(child, childrenDiv, false));
     nodeEl.appendChild(childrenDiv);
   }
 
@@ -1041,75 +1362,74 @@ function resetProgress() {
   document.getElementById('progressDetail').textContent = t('progressDetail', 0, 0);
 }
 
-// ── Progress callback ─────────────────────────────────────────────────────────
-window._onProgress = function(progress) {
-  const pct = Math.round((progress.done / progress.total) * 100);
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('pctLabel').textContent = pct + '%';
-  document.getElementById('progressDetail').textContent =
-    t('progressDetail', progress.done, progress.total);
-  addLogRow(progress.entry.oldName, progress.entry.newName, progress.entry.reason, progress.entry.hasExif);
+// ── Reason localisation ───────────────────────────────────────────────────────
+// Backend sends a neutral reasonCode + dateStr; the UI builds the label so
+// it follows the active language (no hard-coded German from the backend).
+const _SRC_KEYS = {
+  original:  'srcOriginal',
+  digitized: 'srcDigitized',
+  datetime:  'srcDatetime',
+  mtime:     'srcMtime',
 };
-
-// ── Start rename ──────────────────────────────────────────────────────────────
-async function startRename() {
-  if (isRunning) return;
-  const nodes = getCheckedNodes();
-  if (nodes.length === 0) return;
-
-  isRunning = true;
-  const btn = document.getElementById('startBtn');
-  btn.disabled = true;
-  btn.textContent = t('btnProcessing');
-  btn.classList.remove('done');
-  document.getElementById('statusTxt').textContent = t('statusProcessing');
-  document.getElementById('progressFill').classList.add('active');
-  document.getElementById('logPulse').classList.add('active');
-
-  logEntries = [];
-  document.getElementById('logTableBody').innerHTML = '';
-  document.getElementById('logCount').textContent = t('logEntries', 0);
-  document.getElementById('logTable').style.display = 'none';
-  document.getElementById('logEmpty').style.display = '';
-  document.getElementById('logFileHint').classList.remove('visible');
-  document.getElementById('logBody').classList.add('open');
-  document.getElementById('logChevron').classList.add('open');
-
-  const result = await window.pywebview.api.start_renaming(nodes.map(n => n.path));
-
-  isRunning = false;
-  document.getElementById('progressFill').classList.remove('active');
-  document.getElementById('logPulse').classList.remove('active');
-  btn.disabled = false;
-  btn.textContent = t('btnDone', result.renamed);
-  btn.classList.add('done');
-  document.getElementById('statusTxt').textContent = t('statusDone');
-  document.getElementById('statusDetail').textContent =
-    t('statusAfterDone', result.total, result.unnamedCount);
-  document.getElementById('logFileHint').classList.add('visible');
+function reasonText(code, dateStr) {
+  if (code === 'no_exif') return t('reasonNoExif');
+  if (code === 'error')   return t('reasonError') + (dateStr ? ': ' + dateStr : '');
+  const label = _SRC_KEYS[code] ? t(_SRC_KEYS[code]) : code;
+  return dateStr ? `${dateStr} · ${label}` : label;
 }
 
-// ── Log helpers ───────────────────────────────────────────────────────────────
-function addLogRow(oldName, newName, reason, hasExif) {
-  logEntries.push({ oldName, newName, reason, hasExif });
-  document.getElementById('logTable').style.display = '';
-  document.getElementById('logEmpty').style.display = 'none';
+// ── Progress callback (batched) ───────────────────────────────────────────────
+// The backend pushes entries in batches (one IPC call per N files instead of
+// per file). The log DOM is capped at LOG_RENDER_CAP rows so huge runs stay
+// responsive; logEntries keeps the full data for export / rename_log.txt.
+const LOG_RENDER_CAP = 1000;
 
+function buildLogRow(oldName, newName, reason, hasExif, reasonCode) {
+  const cls = newName.startsWith('unnamed_') ? 'unnamed'
+            : reasonCode === 'mtime' ? 'mtime' : '';
   const tr = document.createElement('tr');
-  const isUnnamed = newName.startsWith('unnamed_');
   tr.innerHTML = `
     <td class="td-old">${oldName}</td>
     <td class="td-arrow">→</td>
-    <td class="td-new ${isUnnamed ? 'unnamed' : ''}">${newName}</td>
+    <td class="td-new ${cls}">${newName}</td>
     <td class="td-reason">${reason}</td>
     <td><span class="tag ${hasExif ? 'exif' : 'noexif'}">${hasExif ? t('tagExif') : t('tagNoExif')}</span></td>
   `;
-  document.getElementById('logTableBody').appendChild(tr);
+  return tr;
+}
+
+window._onProgressBatch = function(batch) {
+  const pct = Math.round((batch.done / batch.total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('pctLabel').textContent = pct + '%';
+  document.getElementById('progressDetail').textContent =
+    t('progressDetail', batch.done, batch.total);
+
+  document.getElementById('logTable').style.display = '';
+  document.getElementById('logEmpty').style.display = 'none';
+
+  const tbody = document.getElementById('logTableBody');
+  const frag = document.createDocumentFragment();
+  for (const e of batch.entries) {
+    const reason = reasonText(e.reasonCode, e.dateStr);
+    logEntries.push({ oldName: e.oldName, newName: e.newName, reason, hasExif: e.hasExif });
+    if (logEntries.length <= LOG_RENDER_CAP) {
+      frag.appendChild(buildLogRow(e.oldName, e.newName, reason, e.hasExif, e.reasonCode));
+    }
+  }
+  if (frag.childNodes.length) tbody.appendChild(frag);
+
   document.getElementById('logCount').textContent = t('logEntries', logEntries.length);
+
+  if (logEntries.length > LOG_RENDER_CAP) {
+    const more = document.getElementById('logMore');
+    more.style.display = '';
+    more.textContent = t('logCapNote', LOG_RENDER_CAP, logEntries.length);
+  }
 
   const body = document.getElementById('logBody');
   body.scrollTop = body.scrollHeight;
-}
+};
 
 function toggleLog() {
   document.getElementById('logBody').classList.toggle('open');
@@ -1139,8 +1459,253 @@ function exportLog() {
   a.click();
 }
 
+// ── Remove root node ──────────────────────────────────────────────────────────
+function removeRootNode(node) {
+  const idx = rootNodes.indexOf(node);
+  if (idx !== -1) {
+    rootNodes.splice(idx, 1);
+    rebuildTree();
+    updatePanel();
+  }
+}
+
+// ── Preview dialog ─────────────────────────────────────────────────────────────
+// The backend keeps the full operation list server-side and only sends a
+// capped slice for display (preview.operations) plus preview.total /
+// preview.folderCount. start_renaming() then needs no arguments — it works
+// off the cached list, so the full array never crosses the bridge twice.
+let previewTotal = 0;
+
+function showPreviewDialog(preview) {
+  const ops = preview.operations;
+  previewTotal = preview.total;
+
+  document.getElementById('previewTitle').textContent = t('previewTitle');
+  document.getElementById('previewSub').textContent =
+    t('previewSubtitle', preview.total, preview.folderCount);
+  document.getElementById('pvColOld').textContent = t('previewColOld');
+  document.getElementById('pvColNew').textContent = t('previewColNew');
+  document.getElementById('pvColReason').textContent = t('previewColReason');
+
+  const body = document.getElementById('previewBody');
+  const emptyEl = document.getElementById('previewEmpty');
+  const tableEl = document.getElementById('previewTable');
+  const confirmBtn = document.getElementById('previewConfirmBtn');
+  const scroll = tableEl.parentElement;
+  body.innerHTML = '';
+  const oldMore = scroll.querySelector('.preview-more');
+  if (oldMore) oldMore.remove();
+
+  if (preview.total === 0) {
+    tableEl.style.display = 'none';
+    emptyEl.style.display = '';
+    emptyEl.textContent = t('previewEmpty');
+    confirmBtn.disabled = true;
+  } else {
+    tableEl.style.display = '';
+    emptyEl.style.display = 'none';
+    confirmBtn.disabled = false;
+
+    body.innerHTML = ops.map(o => {
+      const warn = o.newName.startsWith('unnamed_') || o.reasonCode === 'mtime';
+      const noop = o.oldName === o.newName;
+      return `<tr>
+        <td class="pv-old" title="${o.oldName}">${o.oldName}</td>
+        <td class="pv-arrow">→</td>
+        <td class="pv-new ${warn ? 'warn' : ''}" title="${o.newName}">${noop ? '=' : o.newName}</td>
+        <td class="pv-reason">${reasonText(o.reasonCode, o.dateStr)}</td>
+      </tr>`;
+    }).join('');
+
+    if (preview.total > ops.length) {
+      const more = document.createElement('div');
+      more.className = 'preview-more';
+      more.textContent = t('previewMore', preview.total - ops.length);
+      scroll.appendChild(more);
+    }
+  }
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+}
+
+function closeConfirmOnBackdrop(e) {
+  if (e.target === document.getElementById('confirmOverlay')) closeConfirm();
+}
+
+function proceedRename() {
+  closeConfirm();
+  if (previewTotal > 0) {
+    _beginRenaming();
+  }
+  previewTotal = 0;
+}
+
+// ── Start button handler ───────────────────────────────────────────────────────
+function handleStartBtn() {
+  const btn = document.getElementById('startBtn');
+  if (btn.classList.contains('done')) {
+    resetAll();
+  } else {
+    startRename();
+  }
+}
+
+// ── Reset all ──────────────────────────────────────────────────────────────────
+function resetAll() {
+  rootNodes = [];
+  checkedPaths.clear();
+  logEntries = [];
+
+  rebuildTree();
+  updatePanel();
+
+  document.getElementById('logTableBody').innerHTML = '';
+  document.getElementById('logCount').textContent = t('logEntries', 0);
+  document.getElementById('logTable').style.display = 'none';
+  document.getElementById('logEmpty').style.display = '';
+  document.getElementById('logBody').classList.remove('open');
+  document.getElementById('logChevron').classList.remove('open');
+  document.getElementById('logFileHint').classList.remove('visible');
+  const logMore = document.getElementById('logMore');
+  logMore.style.display = 'none';
+  logMore.textContent = '';
+
+  const startBtn = document.getElementById('startBtn');
+  startBtn.classList.remove('done');
+  startBtn.textContent = t('startBtn');
+  document.getElementById('undoBtn').style.display = 'none';
+
+  resetProgress();
+}
+
+// ── Start rename → compute preview, then confirm ───────────────────────────────
+async function startRename() {
+  if (isRunning) return;
+  const nodes = getCheckedNodes();
+  if (nodes.length === 0) return;
+
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.textContent = t('scanningPreview');
+  document.getElementById('statusTxt').textContent = t('statusProcessing');
+
+  let preview;
+  try {
+    preview = await window.pywebview.api.preview_renaming(
+      nodes.map(n => n.path), mtimeFallback);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = t('startBtn');
+    document.getElementById('statusTxt').textContent = t('statusReady');
+  }
+
+  showPreviewDialog(preview);
+}
+
+// Fire-and-forget: backend runs the cached plan on a background thread and
+// pushes window._onProgressBatch / window._onRenameDone callbacks.
+function _beginRenaming() {
+  if (isRunning) return;
+  isRunning = true;
+
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.textContent = t('btnProcessing');
+  btn.classList.remove('done');
+  document.getElementById('undoBtn').style.display = 'none';
+  document.getElementById('statusTxt').textContent = t('statusProcessing');
+  document.getElementById('progressFill').classList.add('active');
+  document.getElementById('logPulse').classList.add('active');
+
+  logEntries = [];
+  document.getElementById('logTableBody').innerHTML = '';
+  document.getElementById('logCount').textContent = t('logEntries', 0);
+  document.getElementById('logTable').style.display = 'none';
+  document.getElementById('logEmpty').style.display = '';
+  document.getElementById('logFileHint').classList.remove('visible');
+  document.getElementById('logBody').classList.add('open');
+  document.getElementById('logChevron').classList.add('open');
+  const lm = document.getElementById('logMore');
+  lm.style.display = 'none';
+  lm.textContent = '';
+
+  window.pywebview.api.start_renaming(currentLang);
+}
+
+// Called by the backend thread when the whole batch is finished.
+window._onRenameDone = function(summary) {
+  isRunning = false;
+  document.getElementById('progressFill').classList.remove('active');
+  document.getElementById('logPulse').classList.remove('active');
+
+  const btn = document.getElementById('startBtn');
+  btn.disabled = false;
+  btn.textContent = t('btnDone', summary.renamed);
+  btn.classList.add('done');
+
+  document.getElementById('statusTxt').textContent = t('statusDone');
+  document.getElementById('statusDetail').textContent =
+    t('statusAfterDone', summary.total, summary.unnamedCount);
+  document.getElementById('logFileHint').classList.add('visible');
+
+  const undoBtn = document.getElementById('undoBtn');
+  if (summary.canUndo) {
+    undoBtn.style.display = '';
+    undoBtn.disabled = false;
+    undoBtn.textContent = t('undoBtn');
+  } else {
+    undoBtn.style.display = 'none';
+  }
+};
+
+// ── Undo ───────────────────────────────────────────────────────────────────────
+async function doUndo() {
+  const undoBtn = document.getElementById('undoBtn');
+  undoBtn.disabled = true;
+  // Pass folder paths so undo also works from on-disk sidecars when the
+  // in-memory stack is gone (e.g. after an app restart).
+  const result = await window.pywebview.api.undo_renaming(rootNodes.map(n => n.path));
+  document.getElementById('statusTxt').textContent =
+    result.restored > 0 ? t('undoDoneMsg', result.restored) : t('undoNothing');
+  resetAll();
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const confirmOpen = document.getElementById('confirmOverlay').classList.contains('open');
+  if (document.getElementById('settingsOverlay').classList.contains('open') || confirmOpen) {
+    if (e.key === 'Escape') {
+      document.getElementById('settingsOverlay').classList.remove('open');
+      document.getElementById('confirmOverlay').classList.remove('open');
+    } else if (e.key === 'Enter' && confirmOpen &&
+               !document.getElementById('previewConfirmBtn').disabled) {
+      e.preventDefault();
+      proceedRename();
+    }
+    return;
+  }
+
+  if (e.key === 'Enter' && !document.getElementById('startBtn').disabled) {
+    e.preventDefault();
+    handleStartBtn();
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('addBtn').click();
+  }
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-waitForApi(() => { document.getElementById('addBtn').disabled = false; });
+document.getElementById('mtimeToggle').checked = mtimeFallback;
+
+waitForApi(async () => {
+  document.getElementById('addBtn').disabled = false;
+  const heicSupported = await window.pywebview.api.get_heic_status();
+  window._heicSupported = heicSupported;
+  setLanguage(currentLang);
+});
 setLanguage(currentLang);
 </script>
 </body>
